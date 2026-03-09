@@ -12,22 +12,22 @@ Get information about your UpGuard organization. This table returns a single row
 select
   primary_hostname,
   name,
-  score,
-  overall_risk_counts
+  automated_score,
+  category_scores
 from
   upguard_organisation;
 ```
 
-**Get organization risk breakdown:**
+**Get organization category score breakdown:**
 
 ```sql
 select
   primary_hostname,
   name,
-  overall_risk_counts->>'critical' as critical_risks,
-  overall_risk_counts->>'high' as high_risks,
-  overall_risk_counts->>'medium' as medium_risks,
-  overall_risk_counts->>'low' as low_risks
+  category_scores->>'website_security' as website_security,
+  category_scores->>'email_security' as email_security,
+  category_scores->>'network_security' as network_security,
+  category_scores->>'phishing_malware' as phishing_malware
 from
   upguard_organisation;
 ```
@@ -38,7 +38,7 @@ from
 select
   primary_hostname,
   name,
-  score,
+  automated_score,
   category_scores
 from
   upguard_organisation;

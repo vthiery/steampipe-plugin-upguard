@@ -11,9 +11,9 @@ List active risks for your organization in UpGuard.
 ```sql
 select
   risk_id,
-  hostname,
+  hostnames,
   severity,
-  status
+  category
 from
   upguard_organisation_risk
 order by
@@ -25,16 +25,16 @@ order by
 ```sql
 select
   risk_id,
-  hostname,
+  hostnames,
   severity,
-  status,
-  opened_at
+  category,
+  detected_at
 from
   upguard_organisation_risk
 where
   severity in ('critical', 'high')
 order by
-  opened_at desc;
+  detected_at desc;
 ```
 
 **Count risks by severity:**
@@ -56,11 +56,11 @@ order by
 ```sql
 select
   risk_id,
-  hostname,
+  hostnames,
   severity,
-  status,
+  category,
   sources,
-  metadata
+  meta
 from
   upguard_organisation_risk
 where

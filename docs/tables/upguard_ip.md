@@ -11,9 +11,9 @@ List and inspect IP addresses in your UpGuard account.
 ```sql
 select
   ip,
-  hostname,
+  owner,
   asn,
-  asn_description
+  as_name
 from
   upguard_ip;
 ```
@@ -23,9 +23,9 @@ from
 ```sql
 select
   ip,
-  hostname,
+  owner,
   asn,
-  asn_description,
+  as_name,
   services,
   check_results
 from
@@ -39,12 +39,12 @@ where
 ```sql
 select
   asn,
-  asn_description,
+  as_name,
   count(*) as ip_count
 from
   upguard_ip
 group by
-  asn, asn_description
+  asn, as_name
 order by
   ip_count desc;
 ```

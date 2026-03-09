@@ -11,13 +11,13 @@ List identity breaches detected by UpGuard.
 ```sql
 select
   name,
-  type,
-  breach_date,
-  exposed_record_count
+  breach_type,
+  date_occurred,
+  total_exposures
 from
   upguard_breach
 order by
-  breach_date desc;
+  date_occurred desc;
 ```
 
 **List breaches with exposed data classes:**
@@ -25,13 +25,13 @@ order by
 ```sql
 select
   name,
-  breach_date,
-  exposed_record_count,
+  date_occurred,
+  total_exposures,
   exposed_data_classes
 from
   upguard_breach
 order by
-  exposed_record_count desc;
+  total_exposures desc;
 ```
 
 **Get detailed information for a specific breach:**
@@ -39,9 +39,9 @@ order by
 ```sql
 select
   name,
-  type,
-  breach_date,
-  exposed_record_count,
+  breach_type,
+  date_occurred,
+  total_exposures,
   exposed_data_classes,
   description
 from
@@ -54,7 +54,7 @@ where
 
 ```sql
 select
-  extract(year from breach_date) as breach_year,
+  extract(year from date_occurred) as breach_year,
   count(*) as breach_count
 from
   upguard_breach
@@ -69,8 +69,8 @@ order by
 ```sql
 select
   name,
-  breach_date,
-  exposed_record_count,
+  date_occurred,
+  total_exposures,
   exposed_data_classes
 from
   upguard_breach
@@ -78,5 +78,5 @@ where
   exposed_data_classes::text like '%email%'
   or exposed_data_classes::text like '%password%'
 order by
-  breach_date desc;
+  date_occurred desc;
 ```

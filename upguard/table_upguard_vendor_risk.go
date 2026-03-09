@@ -45,10 +45,12 @@ func tableUpguardVendorRisk() *plugin.Table {
 			Hydrate: listVendorRisks,
 			KeyColumns: []*plugin.KeyColumn{
 				{Name: "vendor_primary_hostname", Require: plugin.Required},
+				{Name: "min_severity", Require: plugin.Optional},
 			},
 		},
 		Columns: []*plugin.Column{
 			{Name: "vendor_primary_hostname", Type: proto.ColumnType_STRING, Transform: transform.FromConstant(""), Description: "Primary hostname of the vendor (must be provided in WHERE clause)."},
+			{Name: "min_severity", Type: proto.ColumnType_STRING, Transform: transform.FromConstant(""), Description: "Minimum severity filter (info, low, medium, high, critical). Used as API query parameter."},
 			{Name: "risk_id", Type: proto.ColumnType_STRING, Description: "Unique identifier for the risk type."},
 			{Name: "severity", Type: proto.ColumnType_STRING, Description: "Severity level (info, low, medium, high, critical)."},
 			{Name: "category", Type: proto.ColumnType_STRING, Description: "Risk category."},

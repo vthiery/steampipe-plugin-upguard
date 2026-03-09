@@ -11,9 +11,9 @@ List IP addresses for a specific vendor. **Note:** You must specify `vendor_prim
 ```sql
 select
   ip,
-  hostname,
+  owner,
   asn,
-  asn_description
+  as_name
 from
   upguard_vendor_ip
 where
@@ -25,9 +25,9 @@ where
 ```sql
 select
   ip,
-  hostname,
+  owner,
   asn,
-  asn_description,
+  as_name,
   services,
   check_results
 from
@@ -42,9 +42,9 @@ where
 ```sql
 select
   ip,
-  hostname,
+  owner,
   asn,
-  asn_description
+  as_name
 from
   upguard_vendor_ip
 where
