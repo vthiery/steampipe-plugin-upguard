@@ -120,6 +120,23 @@ make test
 
 The test script ([scripts/test_tables.sh](scripts/test_tables.sh)) builds the plugin, queries each table, and reports pass/fail/skip (scope-restricted tables are skipped rather than failed).
 
+## Important Notes
+
+### API Behavior
+
+Some tables exhibit different behavior depending on how you query them due to UpGuard API design:
+
+- **upguard_vendor**: Querying by `id` or `primary_hostname` returns full details including `first_monitored` and `reassessment_date`. Listing vendors (e.g., by `tier`) returns summary data where some fields may be NULL.
+
+- **upguard_domain**: Querying by `hostname` returns full details including `automated_score` and `scanned_at`. Listing domains returns only basic fields.
+
+This is expected behavior. See [docs/API_INCONSISTENCY.md](docs/API_INCONSISTENCY.md) for technical details.
+
+## Developer Documentation
+
+- [API_INCONSISTENCY.md](docs/API_INCONSISTENCY.md) - How the plugin handles LIST vs GET endpoint differences
+- [FIELD_MAPPING_FIXES.md](docs/FIELD_MAPPING_FIXES.md) - Field mapping corrections and API investigations
+
 ### Further reading
 
 - [Writing plugins](https://steampipe.io/docs/develop/writing-plugins)

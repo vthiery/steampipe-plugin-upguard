@@ -11,7 +11,25 @@ import (
 
 //// TYPES
 
-// Vendor represents a monitored vendor in UpGuard.
+// VendorListItem represents a vendor in the LIST /vendors response (uses mixed camelCase/snake_case).
+type VendorListItem struct {
+	ID               int               `json:"id"`
+	Name             string            `json:"name"`
+	PrimaryHostname  string            `json:"primary_hostname"`
+	Score            int               `json:"score"`
+	AutomatedScore   int               `json:"automatedScore"`
+	OverallScore     int               `json:"overallScore"`
+	Tier             int               `json:"tier"`
+	Labels           []string          `json:"labels"`
+	Monitored        bool              `json:"monitored"`
+	LastAssessed     string            `json:"lastAssessed"`     // camelCase in LIST
+	AssessmentStatus string            `json:"assessmentStatus"` // camelCase in LIST
+	CategoryScores   CategoryScores    `json:"category_scores"`  // snake_case in LIST
+	Attributes       map[string]string `json:"attributes"`
+}
+
+// Vendor represents a vendor in the GET /vendor response (uses consistent snake_case).
+// This struct contains all fields available from the detailed vendor endpoint.
 type Vendor struct {
 	ID                   int               `json:"id"`
 	Name                 string            `json:"name"`
@@ -27,23 +45,24 @@ type Vendor struct {
 	Labels               []string          `json:"labels"`
 	Portfolios           []string          `json:"portfolios"`
 	Note                 string            `json:"note"`
+	Monitored            bool              `json:"monitored"`
 	FirstMonitored       string            `json:"first_monitored"`
-	LastAssessed         string            `json:"last_assessed"`
-	ReassessmentDate     string            `json:"reassessment_date"`
-	AssessmentStatus     string            `json:"assessment_status"`
+	LastAssessed         string            `json:"last_assessed"`     // snake_case in GET
+	ReassessmentDate     string            `json:"reassessment_date"` // only in GET
+	AssessmentStatus     string            `json:"assessment_status"` // snake_case in GET
 	DomainCountActive    int               `json:"domain_count_active"`
 	DomainCountInactive  int               `json:"domain_count_inactive"`
 	DomainCountTotal     int               `json:"domain_count_total"`
-	CategoryScores       CategoryScores    `json:"categoryScores"`
+	CategoryScores       CategoryScores    `json:"categoryScores"` // camelCase in GET
 	OverallRiskCounts    RiskCounts        `json:"overall_risk_counts"`
 	Attributes           map[string]string `json:"attributes"`
 }
 
 // vendorsResponse is the envelope returned by GET /vendors.
 type vendorsResponse struct {
-	Vendors       []Vendor `json:"vendors"`
-	NextPageToken string   `json:"next_page_token"`
-	TotalResults  int      `json:"total_results"`
+	Vendors       []VendorListItem `json:"vendors"`
+	NextPageToken string           `json:"next_page_token"`
+	TotalResults  int              `json:"total_results"`
 }
 
 //// TABLE DEFINITION
@@ -77,10 +96,11 @@ func tableUpguardVendor() *plugin.Table {
 			{Name: "labels", Type: proto.ColumnType_JSON, Description: "Labels assigned to the vendor."},
 			{Name: "portfolios", Type: proto.ColumnType_JSON, Description: "Portfolios the vendor belongs to."},
 			{Name: "note", Type: proto.ColumnType_STRING, Description: "Notes about the vendor."},
-			{Name: "first_monitored", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("FirstMonitored").Transform(transform.NullIfZeroValue), Description: "Date when monitoring started."},
-			{Name: "last_assessed", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("LastAssessed").Transform(transform.NullIfZeroValue), Description: "Date of last assessment."},
-			{Name: "reassessment_date", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("ReassessmentDate").Transform(transform.NullIfZeroValue), Description: "Date of next reassessment."},
-			{Name: "assessment_status", Type: proto.ColumnType_STRING, Description: "Current assessment status."},
+			{Name: "monitored", Type: proto.ColumnType_BOOL, Description: "Whether the vendor is currently being monitored."},
+		{Name: "first_monitored", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("FirstMonitored").Transform(transform.NullIfZeroValue), Description: "Date when vendor monitoring started."},
+		{Name: "last_assessed", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("LastAssessed").Transform(transform.NullIfZeroValue), Description: "Date of last assessment."},
+		{Name: "reassessment_date", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("ReassessmentDate").Transform(transform.NullIfZeroValue), Description: "Date when next reassessment is scheduled."},
+			{Name: "assessment_status", Type: proto.ColumnType_STRING, Description: "Current assessment status (Published, Not assessed, etc.)."},
 			{Name: "domain_count_active", Type: proto.ColumnType_INT, Description: "Number of active domains."},
 			{Name: "domain_count_inactive", Type: proto.ColumnType_INT, Description: "Number of inactive domains."},
 			{Name: "domain_count_total", Type: proto.ColumnType_INT, Description: "Total number of domains."},
@@ -123,7 +143,23 @@ func listVendors(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 			return nil, fmt.Errorf("listing vendors: %w", err)
 		}
 
-		for _, vendor := range result.Vendors {
+		for _, listItem := range result.Vendors {
+			// Convert VendorListItem to Vendor for consistent column access
+			vendor := Vendor{
+				ID:               listItem.ID,
+				Name:             listItem.Name,
+				PrimaryHostname:  listItem.PrimaryHostname,
+				Score:            listItem.Score,
+				AutomatedScore:   listItem.AutomatedScore,
+				OverallScore:     listItem.OverallScore,
+				Tier:             listItem.Tier,
+				Labels:           listItem.Labels,
+				Monitored:        listItem.Monitored,
+				LastAssessed:     listItem.LastAssessed,
+				AssessmentStatus: listItem.AssessmentStatus,
+				CategoryScores:   listItem.CategoryScores,
+				Attributes:       listItem.Attributes,
+			}
 			d.StreamListItem(ctx, vendor)
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil

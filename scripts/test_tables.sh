@@ -60,46 +60,46 @@ echo ""
 
 # Test organisation table
 run_test "upguard_organisation" \
-  "select primary_hostname from upguard_organisation"
+  "select name, primary_hostname, automated_score from upguard_organisation"
 
 # Test available risks
 run_test "upguard_available_risk" \
-  "select id, risk from upguard_available_risk limit 5"
+  "select risk_type, severity, category from upguard_available_risk limit 5"
 
 # Test organisation risks
 run_test "upguard_organisation_risk" \
-  "select risk_id, hostnames from upguard_organisation_risk limit 5"
+  "select risk_id, severity, category, detected_at from upguard_organisation_risk limit 5"
 
 # Test vendors
 run_test "upguard_vendor" \
-  "select id, primary_hostname, name from upguard_vendor limit 5"
+  "select name, monitored, assessment_status from upguard_vendor limit 5"
 
 # Test domains
 run_test "upguard_domain" \
-  "select hostname, active from upguard_domain limit 5"
+  "select hostname, automated_score, active, scanned_at from upguard_domain limit 5"
 
 # Test IPs
 run_test "upguard_ip" \
-  "select ip, owner from upguard_ip limit 5"
+  "select ip, country, automated_score, asn from upguard_ip limit 5"
 
-# Test vulnerabilities
+# Test vulnerabilities (with new field structure)
 run_test "upguard_vulnerability" \
-  "select cve, description from upguard_vulnerability limit 5"
+  "select cve, severity, cvss, created_at from upguard_vulnerability limit 5"
 
 # Test breaches
 run_test "upguard_breach" \
-  "select name, breach_type from upguard_breach limit 5"
+  "select title, date_occurred, breach_type from upguard_breach limit 5"
 
 # Vendor-specific tables (require vendor_primary_hostname)
 if [ -n "$VENDOR_HOSTNAME" ]; then
   run_test "upguard_vendor_risk" \
-    "select risk_id, hostnames from upguard_vendor_risk where vendor_primary_hostname = '$VENDOR_HOSTNAME' limit 5"
+    "select vendor_primary_hostname, risk_id, severity, detected_at from upguard_vendor_risk where vendor_primary_hostname = '$VENDOR_HOSTNAME' limit 5"
   
   run_test "upguard_vendor_domain" \
-    "select hostname, active from upguard_vendor_domain where vendor_primary_hostname = '$VENDOR_HOSTNAME' limit 5"
+    "select vendor_primary_hostname, hostname, automated_score, active from upguard_vendor_domain where vendor_primary_hostname = '$VENDOR_HOSTNAME' limit 5"
   
   run_test "upguard_vendor_ip" \
-    "select ip, owner from upguard_vendor_ip where vendor_primary_hostname = '$VENDOR_HOSTNAME' limit 5"
+    "select vendor_primary_hostname, ip, country, automated_score from upguard_vendor_ip where vendor_primary_hostname = '$VENDOR_HOSTNAME' limit 5"
 else
   printf "  %-40s${YELLOW}SKIP${RESET} (no vendor hostname)\n" "upguard_vendor_risk"
   printf "  %-40s${YELLOW}SKIP${RESET} (no vendor hostname)\n" "upguard_vendor_domain"

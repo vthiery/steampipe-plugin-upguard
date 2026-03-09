@@ -73,3 +73,28 @@ Example API keys with full access would have all of these permissions: `Platform
 | [upguard_organisation_risk](tables/upguard_organisation_risk.md) | List active risks for your organization. |
 | [upguard_vulnerability](tables/upguard_vulnerability.md) | List potential vulnerabilities detected. |
 | [upguard_breach](tables/upguard_breach.md) | List identity breaches detected. |
+
+## Important Notes
+
+### API Behavior
+
+Some tables exhibit different behavior depending on how you query them:
+
+- **upguard_vendor**: Querying by `id` or `primary_hostname` returns full details from the GET endpoint, including fields like `first_monitored` and `reassessment_date`. Listing vendors (e.g., by `tier`) returns summary data where some fields may be NULL.
+
+- **upguard_domain**: Querying by `hostname` returns full details including `automated_score` and `scanned_at`. Listing domains returns only basic fields (`hostname`, `active`).
+
+This is expected behavior based on the UpGuard API design. See [API_INCONSISTENCY.md](API_INCONSISTENCY.md) for details.
+
+## Testing
+
+Run the test suite to verify all tables:
+
+```bash
+./scripts/test_tables.sh
+```
+
+## Developer Documentation
+
+- [API_INCONSISTENCY.md](API_INCONSISTENCY.md) - How the plugin handles LIST vs GET endpoint differences
+- [FIELD_MAPPING_FIXES.md](FIELD_MAPPING_FIXES.md) - Summary of field mapping corrections and API investigations

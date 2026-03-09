@@ -141,7 +141,7 @@ func getVendorDomain(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 		"hostname":                hostname,
 	}
 
-	var result DomainDetails
+	var result Domain
 	if err := client.get(ctx, "/vendor/domain", params, &result); err != nil {
 		return nil, fmt.Errorf("getting vendor domain %s: %w", hostname, err)
 	}

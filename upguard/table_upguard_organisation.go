@@ -16,7 +16,6 @@ type Organisation struct {
 	Name            string         `json:"name"`
 	PrimaryHostname string         `json:"primary_hostname"`
 	AutomatedScore  int            `json:"automatedScore"`
-	OverallScore    int            `json:"overallScore"`
 	CategoryScores  CategoryScores `json:"categoryScores"`
 }
 
@@ -34,7 +33,6 @@ func tableUpguardOrganisation() *plugin.Table {
 			{Name: "name", Type: proto.ColumnType_STRING, Description: "Name of the organization."},
 			{Name: "primary_hostname", Type: proto.ColumnType_STRING, Description: "Primary hostname of the organization."},
 			{Name: "automated_score", Type: proto.ColumnType_INT, Description: "Automated security score."},
-			{Name: "overall_score", Type: proto.ColumnType_INT, Description: "Overall security score."},
 			{Name: "category_scores", Type: proto.ColumnType_JSON, Description: "Breakdown of scores by category."},
 		},
 	}

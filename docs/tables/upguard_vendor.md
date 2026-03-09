@@ -81,3 +81,16 @@ from
 where
   labels @> '["critical"]';
 ```
+
+## Important Notes
+
+### LIST vs GET Behavior
+
+This table exhibits different behavior depending on the query:
+
+- **Querying by id or primary_hostname** (e.g., `WHERE id = 12345` or `WHERE primary_hostname = 'example.com'`): Returns full details from the GET `/vendor` endpoint, including `first_monitored`, `reassessment_date`, `domain_count_*`, `industry_*`, `portfolios`, and `note`. The `monitored` field will show `false` (not returned by GET endpoint).
+
+- **Listing vendors** (e.g., `WHERE tier = 1` or no WHERE clause): Returns summary data from the LIST `/vendors` endpoint. Fields like `first_monitored`, `reassessment_date`, `domain_count_*`, `industry_*`, `portfolios`, and `note` will be NULL (not included in LIST response). The `monitored` field will show `true` for monitored vendors.
+
+This is expected behavior based on the UpGuard API design. For full vendor details, query by specific id or hostname.
+

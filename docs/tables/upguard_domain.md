@@ -81,3 +81,15 @@ from
 group by
   active;
 ```
+
+## Important Notes
+
+### LIST vs GET Behavior
+
+This table exhibits different behavior depending on the query:
+
+- **Querying by hostname** (e.g., `WHERE hostname = 'example.com'`): Returns full details from the GET `/domain` endpoint, including `automated_score`, `scanned_at`, `a_records`, `check_results`, and `labels`.
+
+- **Listing domains** (e.g., `WHERE active = true` or no WHERE clause): Returns basic information from the LIST `/domains` endpoint, including only `hostname` and `active`. Fields like `automated_score` and `scanned_at` will be NULL.
+
+This is expected behavior based on the UpGuard API design. For full domain details, query by specific hostname.

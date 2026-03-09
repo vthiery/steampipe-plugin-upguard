@@ -11,25 +11,26 @@ import (
 
 //// TYPES
 
-// Domain represents a domain in UpGuard.
-type Domain struct {
-	Hostname       string   `json:"hostname"`
-	Active         bool     `json:"active"`
-	AutomatedScore int      `json:"automated_score"`
-	ScannedAt      string   `json:"scanned_at"`
-	Labels         []string `json:"labels"`
+// DomainListItem represents a domain in the LIST /domains response.
+// The LIST endpoint only returns minimal fields.
+type DomainListItem struct {
+	Hostname      string `json:"hostname"`
+	Active        bool   `json:"active"`
+	PrimaryDomain bool   `json:"primary_domain"`
 }
 
 // domainsResponse is the envelope returned by GET /domains.
 type domainsResponse struct {
-	Domains       []Domain `json:"domains"`
-	NextPageToken string   `json:"next_page_token"`
-	TotalResults  int      `json:"total_results"`
+	Domains       []DomainListItem `json:"domains"`
+	NextPageToken string           `json:"next_page_token"`
+	TotalResults  int              `json:"total_results"`
 }
 
-// DomainDetails represents detailed information about a domain.
-type DomainDetails struct {
+// Domain represents detailed information about a domain from GET /domain.
+// This struct contains all fields available from the detailed domain endpoint.
+type Domain struct {
 	Hostname           string        `json:"hostname"`
+	Active             bool          `json:"active"`
 	AutomatedScore     int           `json:"automated_score"`
 	ScannedAt          string        `json:"scanned_at"`
 	ARecords           []string      `json:"a_records"`
@@ -39,11 +40,20 @@ type DomainDetails struct {
 }
 
 // CheckResult represents a security check result.
+// Fields match the actual API response structure.
 type CheckResult struct {
-	RiskID        string `json:"risk_id"`
-	Severity      string `json:"severity"`
-	DetectedAt    string `json:"detected_at"`
-	LastScannedAt string `json:"last_scanned_at"`
+	ID           string                   `json:"id"`
+	RiskType     string                   `json:"riskType"`
+	Pass         bool                     `json:"pass"`
+	Severity     int                      `json:"severity"`      // Numeric severity level
+	SeverityName string                   `json:"severityName"`  // String severity ("info", "low", etc.)
+	Category     string                   `json:"category"`
+	Title        string                   `json:"title"`
+	Description  string                   `json:"description"`
+	CheckedAt    string                   `json:"checked_at"`
+	Sources      []string                 `json:"sources"`
+	Expected     []map[string]interface{} `json:"expected"`
+	Actual       []map[string]interface{} `json:"actual"`
 }
 
 //// TABLE DEFINITION
@@ -119,7 +129,13 @@ func listDomains(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 			return nil, fmt.Errorf("listing domains: %w", err)
 		}
 
-		for _, domain := range result.Domains {
+		for _, listItem := range result.Domains {
+			// Convert DomainListItem to Domain for consistent column access
+			domain := Domain{
+				Hostname: listItem.Hostname,
+				Active:   listItem.Active,
+				// AutomatedScore, ScannedAt, etc. not available from LIST endpoint
+			}
 			d.StreamListItem(ctx, domain)
 			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
@@ -150,7 +166,7 @@ func getDomain(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) 
 		"hostname": hostname,
 	}
 
-	var result DomainDetails
+	var result Domain
 	if err := client.get(ctx, "/domain", params, &result); err != nil {
 		return nil, fmt.Errorf("getting domain %s: %w", hostname, err)
 	}
